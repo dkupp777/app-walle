@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<spring:beans xmlns:spring="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:context="http://www.springframework.org/schema/context"
+  xmlns:aop="http://www.springframework.org/schema/aop"
+  xmlns:tx="http://www.springframework.org/schema/tx"
+  xmlns:task="http://www.springframework.org/schema/task"
+  xmlns:util="http://www.springframework.org/schema/util"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.1.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.0.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+
+    <!-- Data Layer Beans -->
+    <util:map id="SystemParameters" value-type="java.lang.String" key-type="java.lang.String">
+        <!-- MI URL -->
+        <spring:entry key="MiURL" value= "{{ mi_url }}"/>
+        <!-- URL for direct access to this instance where multiple are installed -->
+        <spring:entry key="DirectURL" value= "{{ direct_url }}"/>
+        <!-- How long to wait while sending a request (in Millis)-->
+        <spring:entry key="HttpRequestTimeout" value="10000"/>
+        <!-- The minimum amount of time for a query round trip (in Millis) -->
+        <spring:entry key="QueryRequestMinMillis" value="200"/>
+        <!-- The timeout for a EVVESI password change (in Millis) -->
+        <spring:entry key="PasswordChangeTimeoutMillis" value="5000"/>
+        <!-- The timeout for a EVVESI configuration publish (in Millis) -->
+        <spring:entry key="ConfigurationPublishTimeoutMillis" value="10000"/>
+        <!-- The timeout for a EVVESI log request (in Millis) -->
+        <spring:entry key="LogRequestTimeoutMillis" value="10000"/>
+        <!-- The maximum number of retry attempts for a HTTP connection before giving up -->
+        <spring:entry key="HttpRequestMaxRetrys" value="5"/>
+        <!-- In-Memory cache of response data (single response) size -->
+        <spring:entry key="MessagingMaxMemoryBytes" value="100000"/>
+        <!-- Location of file-based cache of response data -->
+        <spring:entry key="MessagingTempFileLocation" value="/tmp/"/>
+        <!-- URL to access the hub (may be load balanced) -->
+        <spring:entry key="HubURL" value= "{{ hub_url }}"/>
+        
+        <!-- How often should AuditEventHandlers inspect their memory for old items -->
+        <spring:entry key="AuditHandlerCleanupFrequencyMillis" value="60000"/>
+        <!-- How old does an item in an AuditEventHandlers memory have to be in order to be removed -->
+        <spring:entry key="AuditHandlerCleanupEntryExpirationMillis" value="300000"/>
+        <!-- How many unique names must a single IP attempt to log in to before an alert is triggered -->
+        <spring:entry key="MultiUserUniqueNamesThreshold" value="3"/>
+        <!-- How many failures for a single username must occur before an alert is triggered -->
+        <spring:entry key="BruteForceLoginFailureThreshold" value="5"/>
+        
+        
+        <!-- The number of days before expiration to remind the user visually -->
+        <spring:entry key="passwordReminderDays" value="10"/>
+        <!-- The number of days before the user password expires -->
+        <spring:entry key="passwordExpireDays" value="90"/>
+        <!-- The number of bad user login attempts before locking the user -->
+        <spring:entry key="UserAttemptsBeforeLock" value = "3"/>
+        <!-- The number of bad client login attempts before locking the client -->
+        <spring:entry key="ClientAttemptsBeforeLock" value = "3"/>
+        <!-- The number of days of inactivity before a client is inactivated -->
+        <spring:entry key="ClientInactiveDays" value = "90"/>
+        <!-- The number of days of inactivity before warning email is sent about the inactivity -->
+        <spring:entry key="ClientInactiveWarningDays" value = "76"/>
+        <!-- The number of days since the last password change before a warning email is sent -->
+        <spring:entry key="ClientPasswordReminderDays" value = "76"/>
+        <!-- The number of days since the last password change before password expires -->
+        <spring:entry key="ClientPasswordExpireDays" value = "90"/>
+        <!-- The number of days of inactivity before a user is inactivated -->
+        <spring:entry key="UserInactiveDays" value = "90"/>
+        <!-- The number of days of inactivity before warning email is sent about the inactivity -->
+        <spring:entry key="UserInactiveWarningDays" value = "80"/>
+        <!-- The number of days before a temporary user expires -->
+        <spring:entry key="TempUserExpireDays" value = "30"/>
+        
+        <!-- The maximum batch response seconds for an async request (25 hours) -->
+        <spring:entry key="AsyncRequestMaxBatchResponseSeconds" value="90000"/>
+        <!-- The minimum batch response seconds for an async request (1 minute) -->
+        <spring:entry key="AsyncRequestMinBatchResponseSeconds" value="60"/>
+        <!-- The maximum seconds to wait for a batch to complete (24 hours) -->
+        <spring:entry key="AsyncRequestMaxResponseSeconds" value="86400"/>
+        <!-- The minimum seconds to wait for a synchronous request to complete (15 seconds) -->
+        <spring:entry key="SyncRequestMinResponseSeconds" value="15"/>
+        <!-- The maximum seconds to wait for a synchronous request to complete (15 minutes) -->
+        <spring:entry key="SyncRequestMaxResponseSeconds" value="900"/>
+        
+        <!-- The maximum Array Blocking Queue Size -->
+        <spring:entry key="MailManagerQueueSize" value="100"/>
+        <!-- The maximum number of threads that mail managers thread executor will spawn -->
+        <spring:entry key="MailManagerThreadPoolSize" value="3"/>
+        
+    </util:map>
+
+    <spring:bean id="MailManager" scope="singleton" class="org.naphsis.evve.utils.MailManager">
+    	<spring:property name="systemParameters" ref="SystemParameters"/>
+    	<spring:property name="smtpServer" value="localhost"/>
+    	<spring:property name="smtpUser" value=""/>
+    	<spring:property name="smtpPassword" value=""/>
+    	<spring:property name="defaultFromAddress" value="donotreply@vitalchek.com"/>
+    	<spring:property name="configurationLoader" ref="ConfigurationLoader" />
+    </spring:bean>
+   
+		<spring:bean id="FODStateErrorTemplate" class="org.naphsis.evve.utils.MailTemplate" scope="singleton">
+        <spring:property name="mailManager" ref="MailManager" />
+        <spring:property name="configurationLoader" ref="ConfigurationLoader" />
+        <spring:property name="subsystem" value="security" />
+        <spring:property name="templateFileName" value="FodStateError.vm" />
+        <spring:property name="from" value="donotreply@vitalchek.com" />
+        <spring:property name="to">
+            <spring:list>
+                <spring:value> evve.support@vitalchek.com</spring:value>
+            </spring:list>
+        </spring:property>
+        <spring:property name="subject" value="EVVE FOD State Processing Error" />
+        <spring:property name="systemParameters" ref="SystemParameters"/>
+
+    </spring:bean>
+           <spring:bean id="FodBatchCompleteTemplate" class="org.naphsis.evve.utils.MailTemplate" scope="singleton">
+        <spring:property name="mailManager" ref="MailManager" />
+        <spring:property name="configurationLoader" ref="ConfigurationLoader" />
+        <spring:property name="subsystem" value="security" />
+        <spring:property name="templateFileName" value="FodBatchComplete.vm" />
+        <spring:property name="from" value="donotreply@vitalchek.com" />
+        <spring:property name="subject" value="EVVE Fact of Death Batch Processing Complete" />
+        <spring:property name="systemParameters" ref="SystemParameters"/>
+    </spring:bean>
+ 
+    <spring:bean id="UserLockMailTemplate" class="org.naphsis.evve.utils.MailTemplate" scope="singleton">
+        <spring:property name="mailManager" ref="MailManager" />
+        <spring:property name="configurationLoader" ref="ConfigurationLoader" />
+        <spring:property name="subsystem" value="security" />
+        <spring:property name="templateFileName" value="UserLock.vm" />
+        <spring:property name="from" value="donotreply@vitalchek.com" />
+        <spring:property name="subject" value="EVVE Account Locked" />
+        <spring:property name="systemParameters" ref="SystemParameters"/>
+    </spring:bean>
+    <spring:bean id="UserInactivateWarningMailTemplate" class="org.naphsis.evve.utils.MailTemplate" scope="singleton">
+        <spring:property name="mailManager" ref="MailManager" />
+        <spring:property name="configurationLoader" ref="ConfigurationLoader" />
+        <spring:property name="subsystem" value="security" />
+        <spring:property name="templateFileName" value="UserInactivateWarning.vm" />
+        <spring:property name="from" value="donotreply@vitalchek.com" />
+        <spring:property name="subject" value="EVVE Account Inactivity Warning" />
+        <spring:property name="systemParameters" ref="SystemParameters"/>
+    </spring:bean>
+    <spring:bean id="UserInactivateMailTemplate" class="org.naphsis.evve.utils.MailTemplate" scope="singleton">
+        <spring:property name="mailManager" ref="MailManager" />
+        <spring:property name="configurationLoader" ref="ConfigurationLoader" />
+        <spring:property name="subsystem" value="security" />
+        <spring:property name="templateFileName" value="UserInactivate.vm" />
+        <spring:property name="from" value="donotreply@vitalchek.com" />
+        <spring:property name="subject" value="EVVE Account Disabled" />
+        <spring:property name="systemParameters" ref="SystemParameters"/>
+    </spring:bean>
+
+    <spring:bean id="ClientInactivateWarningMailTemplate" class="org.naphsis.evve.utils.MailTemplate" scope="singleton">
+        <spring:property name="mailManager" ref="MailManager" />
+        <spring:property name="configurationLoader" ref="ConfigurationLoader" />
+        <spring:property name="subsystem" value="security" />
+        <spring:property name="templateFileName" value="ClientInactivateWarning.vm" />
+        <spring:property name="from" value="donotreply@vitalchek.com" />
+        <spring:property name="subject" value="EVVE Client Disable Warning" />
+        <spring:property name="to">
+            <spring:list>
+                <spring:value>evvealerts</spring:value>
+            </spring:list>
+        </spring:property>
+        <spring:property name="systemParameters" ref="SystemParameters"/>
+    </spring:bean>
+    <spring:bean id="ClientInactivateMailTemplate" class="org.naphsis.evve.utils.MailTemplate" scope="singleton">
+        <spring:property name="mailManager" ref="MailManager" />
+        <spring:property name="configurationLoader" ref="ConfigurationLoader" />
+        <spring:property name="subsystem" value="security" />
+        <spring:property name="templateFileName" value="ClientInactivate.vm" />
+        <spring:property name="from" value="donotreply@vitalchek.com" />
+        <spring:property name="subject" value="EVVE Client Disabled" />
+        <spring:property name="to">
+            <spring:list>
+                <spring:value>evvealerts</spring:value>
+            </spring:list>
+        </spring:property>
+        <spring:property name="systemParameters" ref="SystemParameters"/>
+    </spring:bean>
+    <spring:bean id="QueryRTMailTemplate" class="org.naphsis.evve.utils.MailTemplate" scope="singleton">
+        <spring:property name="mailManager" ref="MailManager" />
+        <spring:property name="configurationLoader" ref="ConfigurationLoader" />
+        <spring:property name="subsystem" value="query" />
+        <spring:property name="templateFileName" value="QueryRT.vm" />
+        <spring:property name="from" value="donotreply@vitalchek.com" />
+        <spring:property name="subject" value="EVVE Query Submission resulted in a RT" />
+        <spring:property name="to">
+            <spring:list>
+                <!-- FIXME change to support -->
+                <spring:value>evvealerts</spring:value>
+            </spring:list>
+        </spring:property>
+        <spring:property name="systemParameters" ref="SystemParameters"/>
+    </spring:bean>
+    <spring:bean id="StateDownMailTemplate" class="org.naphsis.evve.utils.MailTemplate" scope="singleton">
+        <spring:property name="mailManager" ref="MailManager" />
+        <spring:property name="configurationLoader" ref="ConfigurationLoader" />
+        <spring:property name="subsystem" value="query" />
+        <spring:property name="templateFileName" value="StateDown.vm" />
+        <spring:property name="from" value="donotreply@vitalchek.com" />
+        <spring:property name="subject" value="EVVE SI Down" />
+        <spring:property name="to">
+            <spring:list>
+                <!-- FIXME change to support -->
+                <spring:value>evvealerts</spring:value>
+            </spring:list>
+        </spring:property>
+        <spring:property name="systemParameters" ref="SystemParameters"/>
+    </spring:bean>
+    <spring:bean id="StateUpMailTemplate" class="org.naphsis.evve.utils.MailTemplate" scope="singleton">
+        <spring:property name="mailManager" ref="MailManager" />
+        <spring:property name="configurationLoader" ref="ConfigurationLoader" />
+        <spring:property name="subsystem" value="query" />
+        <spring:property name="templateFileName" value="StateUp.vm" />
+        <spring:property name="from" value="donotreply@vitalchek.com" />
+        <spring:property name="subject" value="EVVE SI up" />
+        <spring:property name="to">
+            <spring:list>
+                <!-- FIXME change to support -->
+                <spring:value>evvealerts</spring:value>
+            </spring:list>
+        </spring:property>
+        <spring:property name="systemParameters" ref="SystemParameters"/>
+    </spring:bean>
+    <spring:bean id="UserInviteMailTemplate" class="org.naphsis.evve.utils.MailTemplate" scope="singleton">
+        <spring:property name="mailManager" ref="MailManager" />
+        <spring:property name="configurationLoader" ref="ConfigurationLoader" />
+        <spring:property name="subsystem" value="security" />
+        <spring:property name="templateFileName" value="InviteMail.vm" />
+        <spring:property name="from" value="donotreply@vitalchek.com" />
+        <spring:property name="subject" value="You have been invited to become an EVVE user" />
+        <spring:property name="systemParameters" ref="SystemParameters"/>
+    </spring:bean>
+    <spring:bean id="UsernameSelfHelpMailTemplate" class="org.naphsis.evve.utils.MailTemplate" scope="singleton">
+        <spring:property name="mailManager" ref="MailManager" />
+        <spring:property name="configurationLoader" ref="ConfigurationLoader" />
+        <spring:property name="subsystem" value="security" />
+        <spring:property name="templateFileName" value="UsernameSelfHelp.vm" />
+        <spring:property name="from" value="donotreply@vitalchek.com" />
+        <spring:property name="subject" value="Requested EVVE user information" />
+        <spring:property name="systemParameters" ref="SystemParameters"/>
+    </spring:bean>
+
+
+    <!--  Business Layer Beans  -->
+    <!--  Service Layer Framework Beans-->
+    <!--  Service Layer Service Beans -->
+    <!--  Interface Layer Beans -->
+
+
+</spring:beans>

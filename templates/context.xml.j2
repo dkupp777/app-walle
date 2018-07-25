@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- The contents of this file will be loaded for each web application -->
+    <Context crossContext="true" useHttpOnly="true">
+    <!-- Default set of monitored resources. If one of these changes, the    -->
+    <!-- web application will be reloaded.                                   -->
+    <WatchedResource>WEB-INF/web.xml</WatchedResource>
+    <WatchedResource>${catalina.base}/conf/web.xml</WatchedResource>
+
+    <!-- Uncomment this to disable session persistence across Tomcat restarts -->
+    <!--
+    <Manager pathname="" />
+    -->
+
+    <!-- Uncomment this to enable Comet connection tacking (provides events
+         on session expiration as well as webapp lifecycle) -->
+    <!--
+    <Valve className="org.apache.catalina.valves.CometConnectionManagerValve" />
+			url=" jdbc:sqlserver://prodsql01;DatabaseName=EVVE_TX;SelectMethod=Cursor; " 
+      factory="com.microsoft.sqlserver.jdbc.SQLServerDataSourceObjectFactory"
+			factory="org.apache.commons.dbcp.BasicDataSourceFactory"
+			url="jdbc:sqlserver://prodsql01;DatabaseName=EVVE_TX;SelectMethod=Cursor;" 
+    -->
+
+		<Resource name= "{{ tx_name }}" 
+			auth="Container" 
+			driverClassName= "{{ tx_driverClassName }}" 
+			maxTotal="1000" 
+			password= "{{ tx_password }}"
+			type="javax.sql.DataSource" 
+			url= "{{ tx_url }}" 
+			username= "{{ tx_username }}"
+			factory="org.apache.tomcat.dbcp.dbcp2.BasicDataSourceFactory"
+			removeAbandonedTimeout="60"
+			logAbandoned="true"
+			removeAbandonedOnMaintenance="true"
+			timeBetweenEvictionRunsMillis="60000"
+			/>
+		<Resource name= "{{ birt_name }}"
+			auth="Container"
+			driverClassName= "{{ birt_driverClassName }}"
+			maxIdle="30"
+			maxTotal="100"
+			password= "{{ birt_password }}"
+			type="javax.sql.DataSource"
+			url= "{{ birt_jdbcurl }}"
+			username= "{{ birt_username }}"
+			factory="org.apache.tomcat.dbcp.dbcp2.BasicDataSourceFactory"
+			/>
+
+		<Resources cachingAllowed="true" cacheMaxSize="100000" />
+</Context>

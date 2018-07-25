@@ -1,0 +1,125 @@
+- name: Create base "{{ app }}" directory
+  file:
+    path: "{{ app_home }}" 
+    state: directory   
+    mode: 0755
+    
+- name: Copy tomcat directory to {{ app_home }}
+  synchronize:
+    src: /opt/{{ tomcat_ver }}/
+    dest: "{{ app_home }}"
+  delegate_to: "{{ inventory_hostname }}"   
+
+- name: Copy {{ app }} etc directory
+  synchronize:
+    src: /media/packages/{{ app }}/etc
+    dest: /vc/
+
+- name: Push /vc/{{ app }} config files
+  template:
+    src: "{{item.src}}"
+    dest: "{{item.dest}}"
+    mode: 0644
+  with_items:
+     - { src: 'context.xml.j2', dest: '{{ app_home }}conf/context.xml' }
+     - { src: 'server.xml.j2', dest: '{{ app_home }}conf/server.xml' }
+
+- name: Push /vc/etc config files
+  template:
+    src: "{{item.src}}"
+    dest: "/vc/etc/naphsis/evve/config/{{item.dest}}"
+    mode: 0644
+  with_items:
+     - { src: 'EVVE_HUB_beans.xml.j2', dest: 'EVVE_HUB/EVVE_HUB_beans.xml' }
+     - { src: 'EVVE_MI_beans.xml.j2', dest: 'EVVE_MI/EVVE_MI_beans.xml' }
+     - { src: 'EVVE_MI.properties.j2', dest: 'EVVE_MI/EVVE_MI.properties' }
+     - { src: 'EVVE_SI_beans.xml.j2', dest: 'EVVE_SI/EVVE_SI_beans.xml' }
+     - { src: 'EVVE_SI.properties.j2', dest: 'EVVE_SI/EVVE_SI.properties' }
+     - { src: 'footer.vm.j2', dest: 'EVVE_HUB/alerts/footer.vm' }
+     - { src: 'footer.vm.j2', dest: 'EVVE_MI/alerts/footer.vm' }
+     - { src: 'footer.vm.j2', dest: 'EVVE_MI/query/footer.vm' }
+
+- name: Import JARS to {{ app_home }}lib
+  synchronize:
+    src: /media/packages/{{ app }}/jar/
+    dest: "{{ app_home }}lib"
+
+- name: Deploy artifacts to {{ app_home }}webapps
+  synchronize:
+    src: /media/packages/{{ app }}/artifacts/
+    dest: "{{ app_home }}webapps"
+  
+
+- name: Ensure group {{ app }} exists
+  group:
+    name: "{{ app }}"
+    state: present
+
+- name: Ensure {{ app }} user exists
+  user:
+    name: "{{ app }}"
+    group: "{{ app }}"
+    comment: "{{ app }} user"
+    state: present
+
+- name: Ensure {{ app }} ownership  
+  file:
+    path: "/vc/"
+    owner: "{{ app }}"
+    group: "{{ app }}"
+    recurse: yes
+
+# Logging
+
+- name: Ensure system packages installed
+  yum:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - rsyslog
+    - logrotate
+
+- name: Create /opt/scripts directory
+  file:
+    path: /opt/scripts
+    state: directory
+    mode: 0755
+
+- name: Push /etc/rsyslog.conf file
+  template:
+    src: rsyslog.conf.j2
+    dest: /etc/rsyslog.conf
+    owner: root
+    mode: 0644
+  notify: 
+    - Restart Rsyslog
+   
+
+- name: Ensure system scripts exists
+  template:
+    src: "{{item.src}}"
+    dest: "{{item.dest}}"
+    mode: 0755
+  with_items:
+     - { src: 'setenv.sh.j2', dest: '{{ app_home }}bin/setenv.sh'}
+     - { src: 'evverestart.sh.j2', dest: '/opt/scripts/evverestart.sh' }
+     - { src: 'archiveVitalchekLogs.sh.j2', dest: '/opt/scripts/archiveVitalchekLogs.sh' }
+     - { src: 'removeVitalchekLogs.sh.j2', dest: '/opt/scripts/removeVitalchekLogs.sh' }
+
+# Cron Jobs
+
+- name: Maintainence restart
+  cron:
+    name: Evve weekend restart #Description of a crontab entry
+    weekday: 0 #Day of the week that the job should run ( 0-6 for Sunday-Saturday, *, etc )
+    minute: 30 #Minute when the job should run ( 0-59, *, */2, etc )
+    hour: 12 #Hour when the job should run ( 0-23, *, */2, etc )
+    job: '/opt/scripts/evverestart.sh' #The command to execute. Required if state=present.
+    state: absent #Choices: absent;present. Whether to ensure the job or environment variable is present or absent.
+    user: root #The specific user whose crontab should be modified.
+
+
+#TODO:
+# inquire about /etc/adminapps/certs
+
+  

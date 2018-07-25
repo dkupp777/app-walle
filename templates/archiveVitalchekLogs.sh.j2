@@ -1,0 +1,51 @@
+#!/bin/bash
+#=============================================================================
+#  PROGRAM NAME: archiveVitalchekLogs.sh
+#
+#   DESCRIPTION: Archives the log VPS log files for the month(s) previous to
+#                the current month. The files are placed in the LOGDIR/archive
+#                under the current month abbreviation.
+#
+#        AUTHOR: Darren Johnson
+#
+#  DATE WRITTEN: 2013-09-03
+#
+# MODIFICATIONS: None.
+#=============================================================================
+
+# Ensure we have a command line argument
+if [ "$#" -ne "1" ]; then
+  echo
+  echo "Usage: `basename $0` <pathContainingLogFiles>"
+  echo
+  exit 1
+fi
+
+# Get the path from the parameter and make sure it exists
+LOGDIR=$1
+if [ ! -e $LOGDIR ]; then
+  echo
+  echo "ERROR: The log directory path $LOGDIR does not exist. Cannot continue."
+  echo
+  exit 2;
+fi
+
+# Declare Variables
+ARCHIVEPATH=$LOGDIR/archive/`date +'%Y/%b' -d 'last month' | tr '[A-Z]' '[a-z]'`
+LASTMONTH=`date +'%Y-%m' -d 'last month'`
+TESTFILEPATH=/tmp/logtestfile.txt
+
+# Change to the log directory
+cd $LOGDIR
+
+# Make sure the archive/year/month directory path exists
+mkdir -p $ARCHIVEPATH
+
+# Create Test File
+touch -d "`date +'%Y%m'01`" $TESTFILEPATH
+
+# Find any log file written before the current month
+find $LOGDIR -maxdepth 1 -not -newer $TESTFILEPATH -exec mv '{}' $ARCHIVEPATH/ \;
+
+# GZip Any File in the archive directory that hasn't already been zipped
+find $ARCHIVEPATH -regextype grep -regex '.*[log|0-9]' -type f -exec gzip '{}' \;

@@ -1,0 +1,21 @@
+---
+- name: Start Rsyslog 
+  service:
+    name: rsyslog # Name of the service.
+    state: started # choices: reloaded;restarted;running;started;stopped.
+
+- name: Restart Rsyslog
+  service:
+    name: rsyslog
+    state: restarted
+
+- name: Start Evve
+  service:
+    name: evve
+    state: started
+
+- name: Restart Evve
+  service:
+    name: evve
+    state: restarted
+

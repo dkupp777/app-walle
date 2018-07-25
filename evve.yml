@@ -1,0 +1,7 @@
+---
+- hosts: evve
+  remote_user: svc_devops
+  become: yes
+  become_method: sudo
+  roles:
+    - evve

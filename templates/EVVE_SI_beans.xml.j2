@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<spring:beans xmlns:spring="http://www.springframework.org/schema/beans" xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <!-- Data Layer Beans -->
+    <util:map id="SystemParameters" value-type="java.lang.String" key-type="java.lang.String">
+        <!-- How long to wait while sending a request -->
+        <spring:entry key="HttpRequestTimeout" value="10000"/>
+        <!-- The maximum number of retry attempts for a HTTP connection before giving up -->
+        <spring:entry key="HttpRequestMaxRetrys" value="5"/>
+        <!-- In-Memory cache of response data (single response) size -->
+        <spring:entry key="MessagingMaxMemoryBytes" value="100000"/>
+        <!-- Location of file-based cache of response data -->
+        <spring:entry key="MessagingTempFileLocation" value="/tmp"/>
+        <!-- The abbreviation for the local jurisdiction -->
+        <spring:entry key="JurisdictionAbbreviation" value="XX"/>
+        <!-- The maximum amount of data HSQLDB will pull down from a single query before terminating the execution -->
+        <spring:entry key="MAXHSQLDBQueryResultSizeInBytes" value="10485760"/>
+       <!-- How often should AuditEventHandlers inspect their memory for old items -->
+        <spring:entry key="AuditHandlerCleanupFrequencyMillis" value="60000"/>
+        <!-- How old does an item in an AuditEventHandlers memory have to be in order to be removed -->
+        <spring:entry key="AuditHandlerCleanupEntryExpirationMillis" value="300000"/>
+        <!-- How many unique names must a single IP attempt to log in to before an alert is triggered -->
+        <spring:entry key="MultiUserUniqueNamesThreshold" value="3"/>
+        <!-- How many failures for a single username must occur before an alert is triggered -->
+        <spring:entry key="BruteForceLoginFailureThreshold" value="5"/>
+        <!-- How long will SI allow the one-time password remain valid for pw reset requests (minutes) -->
+        <spring:entry key="SIGeneratedPasswordAcceptTimeoutInMinutes" value="15"/>
+        <!-- The maximum Array Blocking Queue Size -->
+        <spring:entry key="MailManagerQueueSize" value="100"/>
+        <!-- The maximum number of threads that mail managers thread executor will spawn -->
+        <spring:entry key="MailManagerThreadPoolSize" value="3"/>
+        <!-- When SI detects it has less than this amount of log space (kilobytes) it will alert -->
+        <spring:entry key="FreeSpaceThreshold" value="10485760"/>
+        <!-- How old do these file types need to be before they are removed by the nightly purge (0=forever)-->
+        <spring:entry key="DebugLogAgeDays" value="28"/>
+        <spring:entry key="AuditLogAgeDays" value="120"/>
+        <spring:entry key="RequestLogAgeDays" value="365"/>
+        <spring:entry key="AnnotationLogAgeDays" value="365"/>
+    </util:map>
+
+	<spring:bean id="QueryConfiguration" scope="singleton" class="org.naphsis.evve.si.data.hubconfig.impl.QueryConfigurationImpl">
+	</spring:bean>
+
+    <spring:bean id="MailManager" scope="singleton" class="org.naphsis.evve.utils.MailManager">
+    	<spring:property name="systemParameters" ref="SystemParameters"/>
+    	<spring:property name="smtpServer" value="localhost"/>
+    	<spring:property name="smtpUser" value=""/>
+    	<spring:property name="smtpPassword" value=""/>
+    	<spring:property name="defaultFromAddress" value="donotreply@vitalchek.com"/>
+    	<spring:property name="configurationLoader" ref="ConfigurationLoader" />
+    </spring:bean>
+
+    <!--  Business Layer Beans  -->
+    <!--  Service Layer Framework Beans-->
+    <!--  Service Layer Service Beans -->
+    <!--  Interface Layer Beans -->
+
+</spring:beans>

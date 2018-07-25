@@ -1,0 +1,3 @@
+#!/bin/bash
+find /vc/etc/naphsis/evve/config -type f -mtime +370 -name '*.gz' -exec rm {} \;
+find /vc/evve/current/logs  -type f -mtime +370 -name '*.gz' -exec rm {} \;

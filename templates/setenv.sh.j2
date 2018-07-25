@@ -1,0 +1,13 @@
+#!/bin/bash
+
+export JAVA_HOME={{ java_home }}
+
+# Set EVVE's umask -- rw rw r
+export UMASK="002"
+
+# Non-JMX Version
+#export JAVA_OPTS="-Djdk.tls.client.protocols="TLSv1" -Xms500M -Xmx2G -Devve_config=/vc/etc/naphsis/evve/config -DEVVEINSTALL=/vc/etc/naphsis/evve -Djavax.net.ssl.trustStore=/vc/etc/pki/evve_uat_truststore"
+export JAVA_OPTS="-Xms500M -Xmx8G -Devve_config=/vc/etc/naphsis/evve/config -DEVVEINSTALL=/vc/etc/naphsis/evve -Djavax.net.ssl.trustStore=/vc/etc/pki/evve_cacerts"
+
+# JMX Version
+#export JAVA_OPTS="-Djdk.tls.client.protocols="TLSv1" -Xms500M -Xmx2G -Devve_config=/vc/etc/naphsis/evve/config -DEVVEINSTALL=/vc/etc/naphsis/evve -Djavax.net.ssl.trustStore=/vc/etc/pki/evve_uat_truststore -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=11080 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote=true -Djava.rmi.server.hostname=208.255.233.44"

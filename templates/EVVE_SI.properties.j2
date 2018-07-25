@@ -1,0 +1,41 @@
+# DB Connection - can be done in UI directly
+DB1-DBConnectionString=jdbc:sqlserver://prodsql01.risk.regn.net\\uat;User=<user>;Password=<pwd>;DatabaseName=evveXX
+DB1-DBUserId=app_evve_q2
+DB1-DBPassword=db15395578
+
+# Startup batch
+performStartupBatch=N
+startupBatchFile=/startup/test_all_queries.txt
+
+# JDBC Driver Capabilities
+setMaxRowsImplemented=Y
+scrollCursorImplemented=Y
+
+# NEW or USED in Code
+stateAbbrev=XX
+corePoolSize=2
+maxPoolSize=10
+threadTimeout=120
+
+# Only for Mississippi (TexPress)
+texPressImplementation=N
+DB1-DBHostname=
+DB1-DBPort=
+
+# Only for Missouri
+hostname=mohdev1
+port=1414
+channel=CHERYL.mohdev1
+sendqueue=EVVE.SEND
+receivequeue=EVVE.RECEIVE
+qManager=mohdev1.QUEUE.MANAGER
+evveMQQueueLocation=/evve/XXWSAD51/MQLog/
+webserviceLocation=https://evvewstest.dhss.mo.gov/services/evve_ws/evvewebservice.asmx
+
+# Only user for jurisdictions using MSSql stored procedure method
+MsSqlSPStatement={ call PROC_Test(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) }
+
+# Setup encryption and SSL - this may not be needed any longer
+encryptionProvider=
+protocolHandler=
+sslLibrary=
